@@ -33,11 +33,8 @@ class Molecule(val m: String) extends AnyType with HasProperty with LynxComputab
 
   private def reaction(molecule: Molecule, molecule2: Molecule): Molecule = (molecule.m, molecule2.m) match {
     case ("HH", "OO") => new Molecule("H2O")
+    case ("Na", "HCl") => new Molecule("NaCl")
     case _ => new Molecule("")
-  }
-
-  override def sameTypeCompareTo(o: LynxValue): Int = {
-    0
   }
 
   override def equals(obj: Any): Boolean = obj match {

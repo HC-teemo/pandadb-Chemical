@@ -31,6 +31,8 @@ class ChemicalPluginTest extends LazyLogging{
               |CREATE (:Acid{name:'Chloric acid', name_zh:'氯酸', molecule: Chem.newMolecule('HClO3')})
               |CREATE (:Acid{name:'Perchloric acid', name_zh:'高氯酸', molecule: Chem.newMolecule('HClO4')})
               |CREATE (:Acid{name:'Sulfuric acid', name_zh:'硫酸', molecule: Chem.newMolecule('H2SO4')})
+              |CREATE (:Gas{name:'Hydrogen', name_zh:'氢气', atom: Chem.newMolecule('H2')})
+              |CREATE (:Gas{name:'Oxygen', name_zh:'氧气', atom: Chem.newMolecule('O2')})
               |""".stripMargin)
     }
 
@@ -74,7 +76,7 @@ class ChemicalPluginTest extends LazyLogging{
     @Test
     def storageTest(): Unit = {
         withCreation()
-        val result = execute("MATCH (n) RETURN n ORDER BY n.name")
+        val result = execute("MATCH (n:Acid) RETURN n ORDER BY n.name")
         result.show()
         val acids = result.records().flatMap(_.getAsNode("n")).toList
         Assertions.assertEquals(5, acids.size)
@@ -116,11 +118,10 @@ class ChemicalPluginTest extends LazyLogging{
 
     @Test
     def orderByTest(): Unit = {
-        // Query all acid with Cl atom, order by the number of O atom
+        // Query all acid order by the number of O atom
         val result = execute(
             """
               |MATCH (a:Acid)
-              |WHERE  Chem.newAtom('Cl') IN a.molecule.atoms
               |RETURN a, count(a.molecule.atoms) as atomCount
               |ORDER BY atomCount
               |""".stripMargin)
@@ -142,13 +143,17 @@ class ChemicalPluginTest extends LazyLogging{
               |""".stripMargin)
     }
 
+
     @Test
     def operatorTest(): Unit = {
+        withCreation()
         val result = execute(
             """
-              |
+              |Match(h:Gas{name:'Hydrogen'}), (o:Gas{name:'Oxygen'})
+              |RETURN h,o, h.molecule + o.molecule
               |""".stripMargin
         )
+        result.show()
     }
 
     @Test
