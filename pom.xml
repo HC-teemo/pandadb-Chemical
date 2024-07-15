@@ -88,5 +88,11 @@
             <version>2.12.8</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.grapheco</groupId>
+            <artifactId>pandadb</artifactId>
+            <version>0.5.0-beta</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

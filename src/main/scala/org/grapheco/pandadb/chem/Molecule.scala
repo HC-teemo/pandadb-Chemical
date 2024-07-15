@@ -9,7 +9,7 @@ import org.grapheco.pandadb.plugin.typesystem.AnyType
 
 class Molecule(val m: String) extends AnyType with HasProperty with LynxComputable{
 
-  override def value: Any = m
+  override def value: Any = this
 
   override def toString: String = s"<$m>"
 
@@ -17,12 +17,9 @@ class Molecule(val m: String) extends AnyType with HasProperty with LynxComputab
 
   override def serialize(): Array[Byte] = m.getBytes
 
-  override def keys: Seq[LynxPropertyKey] = Seq(LynxPropertyKey("atoms"))
-
-  override def property(propertyKey: LynxPropertyKey): Option[LynxValue] = propertyKey.value match {
-    case "atoms" => Some(LynxList(m.toSeq.filter(_.isLetter).distinct.map(c => new Atom(c)).toList))
-  }
-
+  /*
+  Computable
+   */
   override def add(another: LynxValue): LynxValue = another match {
     case m:Molecule => reaction(this, m)
     case _ => LynxNull
@@ -37,6 +34,29 @@ class Molecule(val m: String) extends AnyType with HasProperty with LynxComputab
   private def reaction(molecule: Molecule, molecule2: Molecule): Molecule = (molecule.m, molecule2.m) match {
     case ("HH", "OO") => new Molecule("H2O")
     case _ => new Molecule("")
+  }
+
+  override def sameTypeCompareTo(o: LynxValue): Int = {
+    0
+  }
+
+  override def equals(obj: Any): Boolean = obj match {
+    case o:Molecule => o.m.equals(m)
+  }
+
+  /*
+  Sub-property
+   */
+  override def keys: Seq[LynxPropertyKey] = Seq(LynxPropertyKey("atoms"))
+
+  override def property(propertyKey: LynxPropertyKey): Option[LynxValue] = propertyKey.value match {
+    case "atoms" => Some(LynxList(atoms()))
+  }
+
+  def atoms(): List[Atom] = {
+    val elementPattern = "([A-Z][a-z]?)".r
+    val elements = elementPattern.findAllIn(m).toList
+    elements.map(Atom.apply)
   }
 }
 
