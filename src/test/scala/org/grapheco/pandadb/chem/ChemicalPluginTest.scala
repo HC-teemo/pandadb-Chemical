@@ -6,7 +6,7 @@ import org.grapheco.lynx.types.property.LynxString
 import org.grapheco.lynx.types.structural.LynxPropertyKey
 import org.grapheco.pandadb.GraphDataBaseBuilder
 import org.grapheco.pandadb.facade.{GraphDatabaseService, PandaTransaction}
-import org.junit.jupiter.api.{Assertions, BeforeAll, Test}
+import org.junit.jupiter.api.{AfterEach, Assertions, BeforeAll, BeforeEach, Test}
 
 import java.io.File
 import scala.language.implicitConversions;
@@ -14,11 +14,20 @@ import scala.language.implicitConversions;
 
 class ChemicalPluginTest extends LazyLogging{
     val path = "./db"
-    deleteRecursively(new File(path))
 
-    val db: GraphDatabaseService = GraphDataBaseBuilder.newEmbeddedDatabase(path)
+    var db: GraphDatabaseService = null
     implicit def propertyName(string: String): LynxPropertyKey = LynxPropertyKey(string)
 
+    @BeforeEach
+    def oninit(): Unit = {
+        deleteRecursively(new File(path))
+        db = GraphDataBaseBuilder.newEmbeddedDatabase(path)
+    }
+
+    @AfterEach
+    def onclose(): Unit = {
+        db.close()
+    }
     def withCreation(): Unit = {
         // clear
 //        execute("MATCH (n) DELETE n")
