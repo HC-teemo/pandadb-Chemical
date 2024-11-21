@@ -35,6 +35,7 @@ object Atom{
     "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts", "Og"
   )
 
+
   private val allAtoms = periodicTableSymbols.map(s=> s->new Atom(s)).toMap
 
   def apply(atom: String): Atom = allAtoms.getOrElse(atom, throw InvalidValueException(atom))
