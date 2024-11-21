@@ -7,22 +7,23 @@ import org.grapheco.lynx.types.structural.LynxPropertyKey
 import org.grapheco.pandadb.GraphDataBaseBuilder
 import org.grapheco.pandadb.facade.{GraphDatabaseService, PandaTransaction}
 import org.junit.jupiter.api.{Assertions, BeforeAll, Test}
-import sourcecode.File
 
+import java.io.File
 import scala.language.implicitConversions;
 
 
 class ChemicalPluginTest extends LazyLogging{
     val path = "./db"
+    deleteRecursively(new File(path))
 
     val db: GraphDatabaseService = GraphDataBaseBuilder.newEmbeddedDatabase(path)
     implicit def propertyName(string: String): LynxPropertyKey = LynxPropertyKey(string)
 
     def withCreation(): Unit = {
         // clear
-        execute("MATCH (n) DELETE n")
-        val empty = execute("MATCH (n) RETURN n")
-        Assertions.assertEquals(0, empty.records().size)
+//        execute("MATCH (n) DELETE n")
+//        val empty = execute("MATCH (n) RETURN n")
+//        Assertions.assertEquals(0, empty.records().size)
         // create
         execute(
             """
@@ -90,7 +91,7 @@ class ChemicalPluginTest extends LazyLogging{
     @Test
     def subPropertyTest(): Unit = {
         withCreation()
-        val result = execute("MATCH (n:Acid) RETURN n.molecule, n.molecule.atoms")
+        val result = execute("MATCH (n:Acid) RETURN n.name,n.molecule, n.molecule.atoms")
         result.show()
     }
 
@@ -107,6 +108,7 @@ class ChemicalPluginTest extends LazyLogging{
 
     @Test
     def matchFilterTest_multi(): Unit = {
+        withCreation()
         // Query all acid with Cl atom
         val multi = execute(
             """MATCH (a:Acid)
@@ -118,11 +120,12 @@ class ChemicalPluginTest extends LazyLogging{
 
     @Test
     def orderByTest(): Unit = {
+        withCreation()
         // Query all acid order by the number of O atom
         val result = execute(
             """
               |MATCH (a:Acid)
-              |RETURN a, count(a.molecule.atoms) as atomCount
+              |RETURN a, size(a.molecule.atoms) as atomCount
               |ORDER BY atomCount
               |""".stripMargin)
         result.show()
@@ -130,6 +133,7 @@ class ChemicalPluginTest extends LazyLogging{
 
     @Test
     def mergeTest(): Unit = {
+        withCreation()
         val result = execute(
             """
               |MATCH (a:Acid)
@@ -159,5 +163,14 @@ class ChemicalPluginTest extends LazyLogging{
     @Test
     def operatorAsFilter(): Unit = {
         val result = execute("")
+    }
+
+    def deleteRecursively(file: File): Unit = {
+        if (file.isDirectory) {
+            file.listFiles.foreach(deleteRecursively)
+        }
+        if (file.exists && !file.delete) {
+            throw new Exception(s"Unable to delete ${file.getAbsolutePath}")
+        }
     }
 }

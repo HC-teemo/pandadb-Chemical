@@ -37,9 +37,6 @@ object Atom{
 
   private val allAtoms = periodicTableSymbols.map(s=> s->new Atom(s)).toMap
 
-  def apply(atom: String): Atom = {
-    println(atom)
-    allAtoms.getOrElse(atom, throw InvalidValueException(atom))
-  }
+  def apply(atom: String): Atom = allAtoms.getOrElse(atom, throw InvalidValueException(atom))
 }
 
